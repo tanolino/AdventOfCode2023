@@ -64,8 +64,47 @@ defmodule Cmp do
   end
 end
 
+defmodule Coll do
+  def fold_minimal_set(set, draw) do
+    List.foldl(Map.keys(draw), set, fn col, acc ->
+      in_set = case Map.fetch(set, col) do
+        :error -> 0
+        {:ok, result} -> result
+      end
+      in_draw = case Map.fetch(draw, col) do
+        :error -> 0
+        {:ok, result} -> result
+      end
+      Map.put(acc, col, max(in_set, in_draw))
+    end)
+  end
+
+  def collect_for_game(game) do
+    data = elem(game, 1)
+    min_set = List.foldl(data, %{}, fn draw, acc ->
+      Coll.fold_minimal_set(acc, draw)
+    end)
+    #IO.inspect(game)
+    #IO.inspect(min_set)
+    game_score = List.foldl(Map.keys(min_set), 1, fn col, acc ->
+      acc * min_set[col]
+    end)
+
+    #IO.puts(elem(game, 0) <> " score :" <> to_string(game_score))
+    game_score
+  end
+
+  def collect_for_games(games) do
+    Enum.map(games, &Coll.collect_for_game/1)
+    |> Enum.sum()
+  end
+end
+
 limit1 = %{"red" => 12, "green" => 13, "blue" => 14}
-["example_1.txt", "input_1.txt"]
+game_files = ["example_1.txt", "input_1.txt"]
+
+IO.puts("Day 2 Part 1")
+game_files
 |> Enum.map(fn file ->
   games = In.read_file(file)
   solution = Cmp.get_games_in_limit(games, limit1)
@@ -74,3 +113,12 @@ limit1 = %{"red" => 12, "green" => 13, "blue" => 14}
   IO.puts(file <> " sum: " <> to_string(solution))
 end)
 
+IO.puts("")
+IO.puts("Day 2 Part 2")
+game_files
+|> Enum.map(fn file ->
+  score = In.read_file(file)
+          |> Coll.collect_for_games()
+
+  IO.puts(file <> " score: " <> to_string(score))
+end)
