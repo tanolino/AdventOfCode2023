@@ -87,8 +87,38 @@ defmodule Find do
   end
 end
 
+defmodule Gear do
+  def conv(part, numbers) do
+    part_x = elem(part, 0)
+    part_y = elem(part, 1)
+    name = elem(part, 2)
+    
+    filtered = Enum.filter(numbers, fn num ->
+      min_x = elem(num, 0) -1
+      max_x = min_x + 1 + String.length(elem(num, 2))
+      min_y = elem(num, 1) -1
+      max_y = min_y + 2
+      name == "*" && part_x >= min_x && part_x <= max_x && part_y >= min_y && part_y <= max_y
+    end)
+    if (length(filtered) == 2) do
+      Enum.map(filtered, fn x ->
+        String.to_integer(elem(x, 2))
+      end)
+      |>List.foldl(1, fn x, acc -> acc * x end)
+    else
+      0
+    end
+  end
+
+  def identify_gears(parts, numbers) do 
+    Enum.map(parts, fn part -> Gear.conv(part, numbers) end)
+    |> Enum.sum()
+  end
+end
+
 files = ["example_1.txt", "input_1.txt"]
 
+IO.puts("Part 1")
 Enum.map(files, fn file ->
   content = In.read(file)
   numbers = Num.gen(content)
@@ -98,3 +128,11 @@ Enum.map(files, fn file ->
   IO.puts(file <> " : " <> to_string(result))
 end)
 
+IO.puts("\nPart 2")
+Enum.map(files, fn file ->
+  content = In.read(file)
+  numbers = Num.gen(content)
+  parts = Part.gen(content)
+  gears = Gear.identify_gears(parts, numbers)
+  IO.inspect(gears)
+end)
