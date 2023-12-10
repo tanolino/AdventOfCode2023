@@ -17,6 +17,23 @@ defmodule In1 do
   end
 end
 
+defmodule In2 do
+  def parse_line(line) do
+    line
+    |> String.replace(~r/.*:/, "")
+    |> String.replace(~r/\s/, "")
+    |> String.to_integer()
+  end
+
+  def read(file) do
+    [t|[d|_]] = File.read!(file)
+                |> String.split("\n", trim: true)
+                |> Enum.map(&String.trim/1)
+                |> Enum.map(&In2.parse_line/1)
+    [{t, d}]
+  end
+end
+
 defmodule Part1 do
   def ceil_above(num) do
     c = ceil(num)
@@ -42,11 +59,12 @@ defmodule Part1 do
     plus_minus = :math.sqrt((time * time / 4) - distance)
     t1 = Part1.ceil_above((time / 2) - plus_minus)
     t2 = Part1.floor_below((time / 2) + plus_minus)
-    # IO.inspect({t1, t2})
+    #IO.inspect({t1, t2})
     t2 - t1 + 1
   end
 
   def solve(data) do
+    #IO.inspect(data)
     data
     |> Enum.map(&Part1.ways_to_win/1)
     |> Enum.reduce(1, fn x, acc -> x * acc end)
@@ -61,3 +79,11 @@ files
   IO.puts("File:\t" <> file <> "\tScore:\t" <> to_string(score))
 end)
 
+IO.puts("")
+IO.puts("Part 2")
+files
+|> Enum.map(fn file ->
+  score = In2.read(file)
+         |> Part1.solve()
+  IO.puts("File:\t" <> file <> "\tScore:\t" <> to_string(score))
+end)
